@@ -1,0 +1,110 @@
+{
+  "name": "fixed-asset-manager",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "electron/main.cjs",
+  "description": "A lightweight fixed asset manager desktop app for internal admin use",
+  "scripts": {
+    "postinstall": "electron-builder install-app-deps",
+    "dev": "concurrently \"npm:dev:server\" \"npm:dev:web\"",
+    "dev:server": "node --watch server/index.js",
+    "dev:web": "vite",
+    "build": "vite build",
+    "start": "NODE_ENV=production node server/index.js",
+    "test": "node --test",
+    "desktop:dev": "concurrently \"npm:dev:server\" \"npm:dev:web\" \"npm:dev:electron\"",
+    "dev:electron": "wait-on tcp:8899 http://127.0.0.1:5173 && cross-env ELECTRON_START_URL=http://127.0.0.1:5173 electron .",
+    "build:desktop": "npm run build && electron-builder --dir",
+    "package:mac": "npm run build && electron-builder --mac dmg",
+    "package:win": "npm run build && electron-builder --win nsis --x64",
+    "package:win:portable": "npm run build && electron-builder --win portable --x64",
+    "package:all": "npm run build && electron-builder --mac dmg --win nsis"
+  },
+  "dependencies": {
+    "better-sqlite3": "^12.6.2",
+    "cors": "^2.8.5",
+    "express": "^5.1.0",
+    "multer": "^2.0.2",
+    "nanoid": "^5.1.6",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^5.1.0",
+    "concurrently": "^9.2.1",
+    "cross-env": "^10.1.0",
+    "electron": "^37.2.1",
+    "electron-builder": "^26.0.12",
+    "supertest": "^7.1.4",
+    "vite": "^7.2.1",
+    "wait-on": "^8.0.5"
+  },
+  "build": {
+    "appId": "com.qishuai.fixedassetmanager",
+    "productName": "Fixed Asset Manager",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "electron/**/*",
+      "server/**/*",
+      "node_modules/**/*",
+      "package.json"
+    ],
+    "asarUnpack": [
+      "node_modules/better-sqlite3/**/*"
+    ],
+    "extraMetadata": {
+      "main": "electron/main.cjs"
+    },
+    "asar": true,
+    "mac": {
+      "category": "public.app-category.business",
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "universal"
+          ]
+        }
+      ],
+      "artifactName": "${productName}-${version}-mac.${ext}"
+    },
+    "dmg": {
+      "title": "${productName} ${version}",
+      "contents": [
+        {
+          "x": 140,
+          "y": 220
+        },
+        {
+          "x": 410,
+          "y": 220,
+          "type": "link",
+          "path": "/Applications"
+        }
+      ]
+    },
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "artifactName": "${productName}-${version}-win.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Fixed Asset Manager"
+    }
+  }
+}
